@@ -152,9 +152,20 @@ class SarsaAgent(QLearningAgent):
 # =============================================================================
 ANSWER_Q7 = """
 (a)
-
+    Both agents learned good Q-values, since their greedy policies won 98% and 99% of games, so
+    the gap is in how they behave while training, not in what they learned. The exploration function
+    tries each action at most N_e = 3 times in a state and then acts greedily there, so its behavior
+    becomes greedy over time: it is GLIE, and its training average (479.6 over the last 200 games)
+    ends up close to greedy play. The epsilon = 0.1 agent never stops exploring: even after 1,000
+    games it still makes a random move about 1 time in 10, and some of those walk into the ghost, so
+    its training average stayed at 283.5. A fixed epsilon > 0 explores forever, so it is not GLIE.
 (b)
-
+    Pure greedy still reached a training average of 493.0 and won 98% of greedy games. The first
+    time an ordinary move is tried, the update gives Q(s,a) = 0.5 * 0 + 0.5 * (-1 + 0.9 * 0) = -0.5,
+    while every untried move in that state is still 0. So the tried move now looks worse than the
+    untried ones, and the greedy rule picks an untried move next, which makes it try every action in a
+    state before repeating one. This is optimism under uncertainty: starting at 0, above the true
+    value of a move that costs -1, plays the same role as R+ in the exploration function.
 """
 
 # =============================================================================
@@ -171,10 +182,28 @@ ANSWER_Q7 = """
 # =============================================================================
 ANSWER_Q8 = """
 (a)
-
+    Q-learning's greedy path runs straight along the row right next to the sleeping ghosts, from
+    Pac-Man's start to the pellet in 7 moves. SARSA's greedy path first steps up one row, crosses the
+    board there, and comes back down to the pellet, taking 9 moves. During the 1,000 training games
+    Q-learning died 177 times with an average score of 323.8, while SARSA died only 78 times and
+    averaged 420.2.
 (b)
-
+    The Q-learning target r + gamma * max_a' Q(s',a') assumes Pac-Man will make the best move
+    after s', so a square next to a ghost is valued as if Pac-Man never slips into it. The SARSA
+    target r + gamma * Q(s',a') uses the move Pac-Man actually makes next, chosen by epsilon-greedy,
+    so it includes the random moves. On the squares along the ghost row there are 4 legal moves and
+    one of them goes down into a ghost, so a random move there kills Pac-Man about 0.1 x 1/4 = 2.5% of
+    the time, and those -500 outcomes get averaged into SARSA's values for those squares. That makes
+    the edge look worse to SARSA than the 2 extra moves of the detour, so SARSA learns the safer path,
+    while Q-learning learns the shortest path and keeps dying on it while it explores.
 (c)
+    While the robot learns I would use SARSA, because it is still exploring and SARSA learns values
+for the policy it actually follows, random moves included, so it learns to stay away from the
+stairs (here it died 78 times instead of 177). Once learning is finished and epsilon is set to 0
+there are no random moves, the two targets become the same, and Q-learning's shorter greedy path
+would be safe and slightly better (7 moves instead of 9). My answer changes only if the real robot
+can still slip or be pushed by things outside its control; then the stairs are still a real risk
+and the cautious SARSA-style path is worth keeping.
 
 """
 

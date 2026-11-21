@@ -163,8 +163,22 @@ def my_features(env, state, action):
 # =============================================================================
 ANSWER_Q9 = """
 (a)
-
+    After 500 games the table agent had 25,666 Q-table entries but won 0% of games with an average
+    score of -418.9, while the approximate agent won 81% after only 100 games, averaging 582.3. With
+    about 9 x 10^15 states on 'twoGhosts', almost every state the table agent meets is one it has never
+    seen, so all its Q-values there are 0 and it picks a move at random; what it learned about a ghost
+    in one place says nothing about the same situation somewhere else. The approximate agent computes
+    Q(s,a) from features, so it can value a state it has never seen: a ghost next to the square a move
+    leads to gets the same penalty anywhere on the board.
 (b)
+    Each feature is divided by 10, so a weight's effect on Q is about a tenth of its size. bias
+    (+149.5) is a positive baseline for any move, since games usually end in a win worth +500.
+    ghosts-1-step-away (-294.2) is the biggest negative: each ghost on or next to the destination
+    subtracts about 29 from Q, because that move risks -500. eats-food (+381.7) adds about 38 when a
+    move safely eats a pellet, worth +10 now and a step toward the win. closest-food (-8.8) is negative
+    because a larger distance to the nearest pellet is worse: more -1 moves before the next pellet and
+    a later win. It is small partly because the feature is the distance divided by the board size and
+    by 10, so its values are tiny.
 
 """
 
@@ -187,12 +201,34 @@ ANSWER_Q9 = """
 # =============================================================================
 ANSWER_Q10 = """
 (a)
-
+    The death report showed Pac-Man lost 14 of 100 greedy games, and all 14 were "trapped: 2 ghosts
+    within 3 steps"; none were caught by a single ghost. ghosts-1-step-away only notices a ghost on or
+    next to the square a move leads to, so Pac-Man walks into spots where two ghosts close in from both
+    sides before it can react. My feature, ghosts-within-3-steps, counts the ghosts whose maze distance
+    (shortest path through open squares) from the square the move leads to is 3 or less, divided by 10.
+    On 'twoGhosts' it ranges from 0 to 0.2 (0, 1 or 2 ghosts), and it is meant to prevent exactly these
+    two-ghost traps by showing the danger a few moves earlier.
 (b)
-
+    Baseline: win rates 81%, 80%, 80% per seed, mean 80%, mean score 580.2. Mine: 93%, 86%, 93%, mean
+    91%, mean score 660.9. The feature helped: the mean win rate went up 11 points and the mean score
+    went up by about 81. The baseline varied by only 1 point between seeds and mine by 7, but every seed
+    improved and my worst seed (86%) beat the baseline's best (81%), so the gain is larger than the
+    seed-to-seed variation. With only 3 seeds of 100 games each, it is good evidence but not proof.
 (c)
-
+    The learned weight of ghosts-within-3-steps was -168.8 (seed 2). The negative sign makes sense:
+    more ghosts within 3 steps means a more dangerous move, so Q goes down and Pac-Man turns away earlier.
+    It helped because it gives information the baseline did not have: the 1-step feature only reacts
+    when a ghost is adjacent, when it can be too late to escape two ghosts. It partly overlaps
+    ghosts-1-step-away, since an adjacent ghost is also within 3 steps, so the two share the credit for
+    nearby ghosts. It still cannot tell whether an escape route is left, only how many ghosts are near,
+    which may explain why Pac-Man still loses 7% to 14% of games.
 (d)
+    Advantage: hand-designed features need very little data and are easy to interpret. With 5
+weights the agent won 91% after just 100 games, and I can read each weight and check that it makes
+sense. Disadvantage: the agent can only learn what the designer thought to measure. The baseline
+could not see two-ghost traps until I added a feature for them, and every new game needs new
+features. A DQN learning from raw pixels finds its own features for any game, but it needs far more
+training and its features are hard to interpret.
 
 """
 

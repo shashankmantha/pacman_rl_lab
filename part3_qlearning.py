@@ -162,10 +162,28 @@ class QLearningAgent:
 # =============================================================================
 ANSWER_Q6 = """
 (a)
-
+    (a) With gamma = 1 the return from Q1 is just the sum of the rewards. 
+    Every move costs −1 and touching the ghost adds −500, so the deadly move is worth −501. 
+    A score of −505 is four ordinary moves and then a fifth move into the ghost: 
+    −1 − 1 − 1 − 1 − 501 = −505. My first games fit the same pattern: −502 in Game 1 is 
+    one move then the deadly one, and −522 in Game 3 is 21 moves then the deadly one. 
+    With an all-zero Q-table every legal action ties at 0, so best_action picks one at 
+    random and Pac-Man does a random walk with no idea the ghost is dangerous. 
+    Only after it dies does Q(s, a) go negative, and only for the one (state, action) pair that killed it.
 (b)
-
+    During training the agent still uses epsilon = 0.1, so about 1 move in 10 is random, 
+    and a random move next to the ghost can cost −500. That is why the training average 
+    for the last 250 games was 329.8 (205 of 250 wins, 82%) while greedy play with epsilon = 0 
+    averaged 500.8 and won 99% of 200 games. The parameter responsible is epsilon, the exploration 
+    rate: the greedy policy it learned is good, but the exploring policy it acts with keeps making some bad moves.
 (c)
+    Upper bound: 14 squares for Pac-Man × 14 squares for the ghost × 2³ pellet subsets = 1,568 states, 
+    and × 4 actions = 6,272 (state, action) pairs. My Q-table had only 1,077 entries, about 17% of the bound. 
+    It is smaller because many combinations never become entries: Pac-Man and the ghost on the same square or 
+    no pellets left ends the game, walls leave fewer than 4 legal moves on most squares, and some combinations 
+    are never reached in 2,000 games. On a full-size board the count explodes (the Part 5 notes give about 
+    9 × 10¹⁵ states for 'twoGhosts'), so the agent could never visit most states, and a table learns nothing 
+    about a state until it has visited it.
 
 """
 
