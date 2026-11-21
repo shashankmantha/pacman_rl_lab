@@ -82,12 +82,20 @@ class ExplorationQAgent(QLearningAgent):
         self.exploring = True            # switched off while the agent is evaluated
 
     def exploration_value(self, u, n):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """AIMA's exploration function (p. 799): optimistic R+ until tried N_e times, then the estimate u."""
+        return self.r_plus if n < self.n_e else u
 
     def get_action(self, state):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """argmax over legal a of f(Q(s,a), N(s,a)), ties at random; greedy when not exploring."""
+        actions = self.legal_actions(state)
+        if not actions:
+            return None
+        if not self.exploring:
+            return self.best_action(state)
+        scores = {a: self.exploration_value(self.get_q_value(state, a), self.counts[(state, a)])
+                  for a in actions}
+        top = max(scores.values())
+        return random.choice([a for a in actions if scores[a] == top])
 
     def update(self, state, action, next_state, reward):
         self.counts[(state, action)] += 1
@@ -109,8 +117,10 @@ class SarsaAgent(QLearningAgent):
         self._planned = None
 
     def sarsa_target(self, reward, next_state, next_action):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """SARSA target (AIMA p. 802): r + gamma Q(s', a') for the action a' really taken; just r at game over."""
+        if next_action is None:
+            return reward
+        return reward + self.gamma * self.get_q_value(next_state, next_action)
 
     def get_action(self, state):
         if self._planned is not None and self._planned[0] == state:

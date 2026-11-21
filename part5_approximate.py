@@ -111,12 +111,17 @@ class ApproximateQAgent(QLearningAgent):
         self.weights = defaultdict(float)    # feature name -> weight
 
     def get_q_value(self, state, action):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """Linear Q-function (AIMA §22.4.1): Q_w(s, a) = sum_i w_i f_i(s, a)."""
+        features = self.feature_fn(self.env, state, action)
+        return sum(self.weights[name] * value for name, value in features.items())
 
     def update(self, state, action, next_state, reward):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """Approximate Q-learning (AIMA Eq. 22.12): w_i <- w_i + alpha * delta * f_i(s, a)."""
+        features = self.feature_fn(self.env, state, action)
+        # Compute delta once, before any weight changes, so every w_i uses the same error.
+        delta = (reward + self.gamma * self.get_value(next_state)) - self.get_q_value(state, action)
+        for name, value in features.items():
+            self.weights[name] += self.alpha * delta * value
 
 
 # =============================================================================
@@ -140,8 +145,10 @@ class ApproximateQAgent(QLearningAgent):
 def my_features(env, state, action):
     f = simple_features(env, state, action)
     nxt = env.next_position(state.pacman, action)
-    # YOUR CODE HERE
-    raise NotImplementedError
+    # New feature: how many ghosts are within 3 maze steps of the square this move leads to
+    # (range 0 to 2 on 'twoGhosts', divided by 10 like the others). The death report showed
+    # every loss was "trapped: 2 ghosts within 3 steps", which ghosts-1-step-away cannot see.
+    f["ghosts-within-3-steps"] = sum(1 for g in state.ghosts if env.maze_distance(nxt, g) <= 3) / 10.0
     return f
 
 

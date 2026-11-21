@@ -92,12 +92,21 @@ class QLearningAgent:
     #   directly: Part 5 replaces get_q_value and your code must still work there.
     # =========================================================================
     def get_value(self, state):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """V(s) = max over legal a of Q(s, a); 0.0 when the game is over (no legal actions)."""
+        actions = self.legal_actions(state)
+        if not actions:
+            return 0.0
+        # Start from the real Q-values, not from 0, so an all-negative state stays negative.
+        return max(self.get_q_value(state, a) for a in actions)
 
     def best_action(self, state):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """pi(s) = argmax over legal a of Q(s, a), ties broken at random; None if no legal actions."""
+        actions = self.legal_actions(state)
+        if not actions:
+            return None
+        best_value = self.get_value(state)
+        best = [a for a in actions if self.get_q_value(state, a) == best_value]
+        return random.choice(best)
 
     # =========================================================================
     # Q4. ε-greedy (6 points)
@@ -107,8 +116,13 @@ class QLearningAgent:
     # are no legal actions. random.random() gives a float in [0, 1).
     # =========================================================================
     def get_action(self, state):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """epsilon-greedy: a random legal action with probability epsilon, else the greedy one."""
+        actions = self.legal_actions(state)
+        if not actions:
+            return None
+        if random.random() < self.epsilon:
+            return random.choice(actions)       # explore: any legal action, best included
+        return self.best_action(state)          # exploit
 
     # =========================================================================
     # Q5. The Q-learning update (12 points)
@@ -120,8 +134,10 @@ class QLearningAgent:
     # when the game is over. Change only Q(state, action).
     # =========================================================================
     def update(self, state, action, next_state, reward):
-        # YOUR CODE HERE
-        raise NotImplementedError
+        """TD Q-learning (AIMA Eq. 22.7): Q(s,a) <- (1 - alpha) Q(s,a) + alpha [r + gamma max_a' Q(s',a')]."""
+        sample = reward + self.gamma * self.get_value(next_state)   # 0 future value if s' is terminal
+        q = self.get_q_value(state, action)
+        self.q_values[(state, action)] = (1 - self.alpha) * q + self.alpha * sample
 
 
 # =============================================================================
