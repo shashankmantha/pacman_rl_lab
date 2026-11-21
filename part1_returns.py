@@ -67,9 +67,17 @@ from pacman import PacmanEnv, RandomAgent, Lane, run_phase, describe_rewards, ou
 #
 # An empty list of rewards gives 0.
 # =============================================================================
+
 def discounted_return(rewards, gamma):
-    # YOUR CODE HERE
-    raise NotImplementedError
+    # accumulate reward while increasing the discount by gamma for each later step
+    total = 0.0
+    discount = 1.0
+
+    for reward in rewards:
+        total += discount * reward
+        discount *= gamma
+
+    return total
 
 
 # =============================================================================
