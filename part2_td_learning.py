@@ -62,8 +62,8 @@ from pacman import PacmanEnv, Lane, run_phase, finish, exact_hallway_utilities, 
 # Change only U[state].
 # =============================================================================
 def td_update(U, state, reward, next_state, alpha, gamma):
-    # YOUR CODE HERE
-    raise NotImplementedError
+    target = reward + gamma * U.get(next_state, 0.0)
+    U[state] += alpha * (target - U[state])
 
 
 # =============================================================================
@@ -78,9 +78,22 @@ def td_update(U, state, reward, next_state, alpha, gamma):
 #     would that extra work pay off?
 # =============================================================================
 ANSWER_Q2 = """
-(a)
+(a) In game 1, Pac-Man leaves square 5 while square 6 still has utility 0.
+The step costs 1, so square 5 moves halfway from 0 to -1, ending at -0.5.
+The final move earns 509, so square 6 moves halfway from 0 to 509, reaching
+254.5. In game 2, square 5 can use that estimate: its target is
+-1 + 0.9 * 254.5 = 228.05, and its updated utility rounds to 113.8.
+Pac-Man visits each square once, moving east, so each predecessor has to
+wait until the next game to use its successor's improved value. Direct
+utility estimation would use the full discounted return after game 1.
+In this deterministic hallway, that one return per square already gives
+the true utilities, from 296.5 at square 1 to 509.0 at square 6 (rounded).
 
-(b)
+(b) ADP estimates transition probabilities and rewards for each state and
+action. TD updates a utility directly from each observed move. Learning a
+model pays off in a small world with stable rules where collecting experience
+is costly: ADP can reuse its estimates to update many states or evaluate a
+different policy if it has observations for the actions that policy uses.
 
 """
 
